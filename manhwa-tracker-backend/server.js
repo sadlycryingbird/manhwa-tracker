@@ -2,6 +2,9 @@ import express from "express";
 
 const app = express();
 const PORT = 3000;
+const manhwas = [];
+
+app.use(express.json());
 
 app.get("/", (req, res) => {
     res.json(
@@ -10,6 +13,12 @@ app.get("/", (req, res) => {
             rating: "9.5"
         }
     );
+});
+
+app.post("/manhwas", (req, res) => {
+    const {title, rating, status} = req.body;
+    manhwas.push({title, rating, status});
+    res.json({ success: true, manhwas });
 });
 
 app.listen(PORT, () => {
