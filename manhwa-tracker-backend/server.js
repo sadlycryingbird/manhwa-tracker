@@ -7,18 +7,36 @@ const manhwas = [];
 app.use(express.json());
 
 app.get("/", (req, res) => {
+
     res.json(
         {
             manhwa: "solo leveling",
             rating: "9.5"
         }
     );
+
 });
 
 app.post("/manhwas", (req, res) => {
+
     const {title, rating, status} = req.body;
     manhwas.push({title, rating, status});
     res.json({ success: true, manhwas });
+
+});
+
+app.patch("/manhwas/:id", (req, res) => {
+
+    const id = parseInt(req.params.id);
+    const status = req.body.status;
+
+    if (!manhwas[id]) {
+        return res.status(404).json({ success: false, message: "Manhwa not found" });
+    }
+
+    manhwas[id].status = status;
+    res.json({ success: true, manhwas});
+
 });
 
 app.listen(PORT, () => {
