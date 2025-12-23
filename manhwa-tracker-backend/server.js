@@ -25,6 +25,16 @@ app.post("/manhwas", (req, res) => {
 
 });
 
+app.delete("/manhwas/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+
+    if (!manhwas[id]) {
+        return res.status(404).json({success: false, message: "Manhwa not found"});
+    }
+    manhwas.splice(id, 1);
+    res.json({success: true, manhwas});
+});
+
 app.patch("/manhwas/:id", (req, res) => {
 
     const id = parseInt(req.params.id);
