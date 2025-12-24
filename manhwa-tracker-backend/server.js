@@ -21,7 +21,7 @@ app.post("/manhwas", (req, res) => {
 
     const {title, rating, status} = req.body;
     manhwas.push({title, rating, status});
-    res.json({ success: true, manhwas });
+    res.json({ success: true, manhwas, message: "Manhwa added"});
 
 });
 
@@ -32,7 +32,7 @@ app.delete("/manhwas/:id", (req, res) => {
         return res.status(404).json({success: false, message: "Manhwa not found"});
     }
     manhwas.splice(id, 1);
-    res.json({success: true, manhwas});
+    res.json({success: true, manhwas, message: "Manhwa deleted"});
 });
 
 app.patch("/manhwas/:id", (req, res) => {
@@ -45,7 +45,7 @@ app.patch("/manhwas/:id", (req, res) => {
     }
 
     manhwas[id].status = status;
-    res.json({ success: true, manhwas});
+    res.json({ success: true, manhwas, message: "Manhwa updated"});
 
 });
 
