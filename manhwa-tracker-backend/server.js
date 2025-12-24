@@ -1,83 +1,115 @@
 import express from "express";
+import Manhwa from "./models/Manhwa.js";
+import "./db.js"; // connect to DB
 
 const app = express();
 const PORT = 3000;
-const manhwas = [];
 
 app.use(express.json());
 
-app.get("/manhwas", (req, res) => {
+app.get("/manhwas", async (req, res) => {
 
-    res.status(200).json({
+    try {
+        const manhwas = await Manhwa.find();
+        res.status(200).json({
         success: true,
         count: manhwas.length,
         data: manhwas
-    });
-});
-
-app.post("/manhwas", (req, res) => {
-
-    const {title, rating, status} = req.body;
-
-    if (!title || !status) {
-        return res.status(400).json({
-            success: false,
-            message: "Title and status are required"
-        });
-    }
-
-    const newManhwa = {title, rating, status};
-    manhwas.push({title, rating, status});
-
-    res.status(201).json({
-        success: true, 
-        newManhwa, 
-        message: "Manhwa added"
-    });
-
-});
-
-app.delete("/manhwas/:id", (req, res) => {
-    const id = parseInt(req.params.id);
-
-    if (!manhwas[id]) {
-        return res.status(404).json({
+    });       
+    } catch (err) {
+        res.status(500).json({
             success: false, 
-            message: "Manhwa not found"
+            error: err.message
         });
     }
-    manhwas.splice(id, 1);
-    res.json({
-        success: true, 
-        manhwas, 
-        message: "Manhwa deleted"
-    });
 });
 
-app.patch("/manhwas/:id", (req, res) => {
+app.post("/manhwas", async (req, res) => {
 
-    const id = parseInt(req.params.id);
-    const status = req.body.status;
+    try {
+        const {title, rating, status} = req.body;
 
-    if (!status) {
-        return res.status(400).json({
+        if (!title || !status) {
+            return res.status(400).json({
+                success: false,
+                message: "Title and status are required"
+            });
+    }
+
+        const manhwa = await Manhwa.create({title, rating, status});
+
+        res.status(201).json({
+            success: true, 
+            manhwa, 
+            message: "Manhwa added"
+        });
+    } catch (err) {
+        res.status(500).json({
             success: false,
-            message: "status is required as input"
-        });
+            error: err.message
+        })
     }
 
-    if (!manhwas[id]) {
-        return res.status(404).json({
-            success: false, 
-            message: "Manhwa not found"
+});
+
+app.delete("/manhwas/:id", async (req, res) => {
+
+    try {
+
+        const manhwa = await Manhwa.findByIdAndDelete(req.params.id);
+
+        if (!manhwa) {
+            return res.status(404).json({
+                success: false, 
+                message: "Manhwa not found"
+            });
+        }
+
+        res.json({
+            success: true, 
+            data: manhwa, 
+            message: "Manhwa deleted"
         });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            error: err.message
+        })
     }
 
-    manhwas[id].status = status;
-    res.json({ 
-        success: true, 
-        manhwas, 
-        message: "Manhwa updated"});
+});
+
+app.patch("/manhwas/:id", async (req, res) => {
+
+    try {
+        const status = req.body.status;
+
+        if (!status) {
+            return res.status(400).json({
+                success: false,
+                message: "status is required as input"
+            });
+        }
+
+        const manhwa = await Manhwa.findByIdAndUpdate(req.params.id, { status }, { new: true });
+
+        if (!manhwa) {
+            return res.status(404).json({
+                success: false, 
+                message: "Manhwa not found"
+            });
+        }
+        
+        res.json({ 
+            success: true, 
+            manhwa, 
+            message: "Manhwa updated"});
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            error: err.message
+        })
+    }
 
 });
 
