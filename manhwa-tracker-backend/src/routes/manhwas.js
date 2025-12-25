@@ -1,28 +1,23 @@
 import express from "express";
 import Manhwa from "../models/Manhwa.js";
+import mongoose from "mongoose";
+import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/", asyncHandler(async (req, res) => {
 
-    try {
         const manhwas = await Manhwa.find();
         res.status(200).json({
         success: true,
         count: manhwas.length,
         data: manhwas
     });       
-    } catch (err) {
-        res.status(500).json({
-            success: false, 
-            error: err.message
-        });
-    }
-});
 
-router.post("/", async (req, res) => {
+}));
 
-    try {
+router.post("/", asyncHandler(async (req, res) => {
+
         const {title, rating, status} = req.body;
 
         if (!title || !status) {
@@ -39,20 +34,21 @@ router.post("/", async (req, res) => {
             manhwa, 
             message: "Manhwa added"
         });
-    } catch (err) {
-        res.status(500).json({
-            success: false,
-            error: err.message
-        })
-    }
 
-});
+}));
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", asyncHandler(async (req, res) => {
 
-    try {
+        const { id } = req.params;
 
-        const manhwa = await Manhwa.findByIdAndDelete(req.params.id);
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid ID format"
+            });
+        }
+
+        const manhwa = await Manhwa.findByIdAndDelete(id);
 
         if (!manhwa) {
             return res.status(404).json({
@@ -63,21 +59,14 @@ router.delete("/:id", async (req, res) => {
 
         res.json({
             success: true, 
-            data: manhwa, 
+            manhwa, 
             message: "Manhwa deleted"
         });
-    } catch (err) {
-        res.status(500).json({
-            success: false,
-            error: err.message
-        })
-    }
 
-});
+}));
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", asyncHandler(async (req, res) => {
 
-    try {
         const status = req.body.status;
 
         if (!status) {
@@ -87,7 +76,16 @@ router.patch("/:id", async (req, res) => {
             });
         }
 
-        const manhwa = await Manhwa.findByIdAndUpdate(req.params.id, { status }, { new: true });
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid ID format"
+            });
+        }
+
+        const manhwa = await Manhwa.findByIdAndUpdate(id, { status }, { new: true });
 
         if (!manhwa) {
             return res.status(404).json({
@@ -100,13 +98,7 @@ router.patch("/:id", async (req, res) => {
             success: true, 
             manhwa, 
             message: "Manhwa updated"});
-    } catch (err) {
-        res.status(500).json({
-            success: false,
-            error: err.message
-        })
-    }
 
-});
+}));
 
 export default router;
