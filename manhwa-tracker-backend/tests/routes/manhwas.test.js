@@ -1,23 +1,20 @@
 import request from "supertest";
-import app from "../../src/server.js";
+import app from "../../src/app.js";
 import mongoose from "mongoose";
 import Manhwa from "../../src/models/Manhwa.js";
-
-beforeAll(async () => {
-    //Connect to a test DB
-    await mongoose.connect(process.env.MONGO_TEST_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    });
-});
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.test" });
 
 beforeEach(async () => {
   await Manhwa.deleteMany({});
 });
 
+beforeAll(async () => {
+  await mongoose.connect(process.env.MONGO_TEST_URI);
+});
+
 afterAll(async () => {
-  // Clean up test DB & disconnect
-  await mongoose.connection.db.dropDatabase();
+  await mongoose.connection.dropDatabase();
   await mongoose.disconnect();
 });
 
@@ -90,4 +87,79 @@ describe("POST /manhwas", () => {
 
     });
 
-})
+});
+
+describe("PATCH manhwas/:id endpoint", () => {
+    
+    it("should edit status accordingly when valid input is given", async () => {
+
+        const testUpdate = {status: "Completed"};
+        const existingManhwa = await Manhwa.create({ title: "Test Solo Leveling", status: "reading", rating: "9.5" });
+
+        const res = await request(app)
+            .patch(`/manhwas/${existingManhwa._id}`)
+            .send(testUpdate);
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(res.body.manhwa.status).toBe("Completed");
+        expect(res.body.message).toBe("Manhwa updated");
+
+        // Query the DB directly to verify it was saved
+        const updatedManhwa = await Manhwa.findOne({title: existingManhwa.title});
+        expect(updatedManhwa).not.toBeNull();
+        expect(updatedManhwa.status).toBe(testUpdate.status);
+
+    });
+
+    it("should return 400 error when status missing in PATCH request", async () => {
+
+        const existingManhwa = await Manhwa.create({
+            title: "Test Solo Leveling",
+            status: "reading",
+            rating: "9.5"
+        });
+        
+          const res = await request(app)
+            .patch(`/manhwas/${existingManhwa._id}`)
+            .send({}); 
+
+        expect(res.statusCode).toBe(400);
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toBe("status is required as input");
+    });
+
+});
+
+describe("DELETE /manhwas/:id endpoint unit tests", () => {
+    it("should delete manhwa from database with valid ID", async () => {
+        const existingManhwa = await Manhwa.create({
+            title: "Test Solo Leveling",
+            status: "reading",
+            rating: "9.5"
+        });
+
+        const res = await request(app)
+            .delete(`/manhwas/${existingManhwa._id}`);
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body.success).toBe(true);
+
+        const nullManhwa = await Manhwa.findOne({title: existingManhwa.title});
+        expect(nullManhwa).toBeNull();
+    });
+
+    it("should return 404 error with an error message when nonexistent id is passed in request", async () => {
+
+        const fakeId = "64b7f9d3f1e7c8a1b2c3d4e5"; 
+
+        const res = await request(app)
+            .delete(`/manhwas/${fakeId}`);
+        
+            expect(res.statusCode).toBe(404);
+            expect(res.body.success).toBe(false);
+            expect(res.body.message).toBe("Manhwa not found");
+
+    });
+
+});

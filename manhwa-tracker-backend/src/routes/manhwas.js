@@ -1,5 +1,6 @@
 import express from "express";
 import Manhwa from "../models/Manhwa.js";
+import mongoose from "mongoose";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = express.Router();
@@ -38,8 +39,16 @@ router.post("/", asyncHandler(async (req, res) => {
 
 router.delete("/:id", asyncHandler(async (req, res) => {
 
+        const { id } = req.params;
 
-        const manhwa = await Manhwa.findByIdAndDelete(req.params.id);
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid ID format"
+            });
+        }
+
+        const manhwa = await Manhwa.findByIdAndDelete(id);
 
         if (!manhwa) {
             return res.status(404).json({
@@ -67,7 +76,16 @@ router.patch("/:id", asyncHandler(async (req, res) => {
             });
         }
 
-        const manhwa = await Manhwa.findByIdAndUpdate(req.params.id, { status }, { new: true });
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid ID format"
+            });
+        }
+
+        const manhwa = await Manhwa.findByIdAndUpdate(id, { status }, { new: true });
 
         if (!manhwa) {
             return res.status(404).json({

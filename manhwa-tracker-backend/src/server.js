@@ -1,15 +1,14 @@
-import express from "express";
-import "../db.js"; // connect to DB
-import manhwaRoutes from "./routes/manhwas.js";
+// src/server.js
+import dotenv from "dotenv";
+dotenv.config({ path: process.env.NODE_ENV === "test" ? ".env.test" : ".env" });
 
-const app = express();
-const PORT = 3000;
+import app from "./app.js";
+import connectDB from "./db.js";
 
-app.use(express.json());
-app.use("/manhwas", manhwaRoutes);
+const PORT = process.env.PORT || 3000;
 
-if (process.env.NODE_ENV !== "test") {
-  app.listen(3000, () => console.log("Server running on port 3000"));
-}
+await connectDB();
 
-export default app;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
