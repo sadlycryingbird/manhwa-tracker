@@ -1,28 +1,22 @@
 import express from "express";
 import Manhwa from "../models/Manhwa.js";
+import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/", asyncHandler(async (req, res) => {
 
-    try {
         const manhwas = await Manhwa.find();
         res.status(200).json({
         success: true,
         count: manhwas.length,
         data: manhwas
     });       
-    } catch (err) {
-        res.status(500).json({
-            success: false, 
-            error: err.message
-        });
-    }
-});
 
-router.post("/", async (req, res) => {
+}));
 
-    try {
+router.post("/", asyncHandler(async (req, res) => {
+
         const {title, rating, status} = req.body;
 
         if (!title || !status) {
@@ -39,18 +33,11 @@ router.post("/", async (req, res) => {
             manhwa, 
             message: "Manhwa added"
         });
-    } catch (err) {
-        res.status(500).json({
-            success: false,
-            error: err.message
-        })
-    }
 
-});
+}));
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", asyncHandler(async (req, res) => {
 
-    try {
 
         const manhwa = await Manhwa.findByIdAndDelete(req.params.id);
 
@@ -66,18 +53,11 @@ router.delete("/:id", async (req, res) => {
             data: manhwa, 
             message: "Manhwa deleted"
         });
-    } catch (err) {
-        res.status(500).json({
-            success: false,
-            error: err.message
-        })
-    }
 
-});
+}));
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", asyncHandler(async (req, res) => {
 
-    try {
         const status = req.body.status;
 
         if (!status) {
@@ -100,13 +80,7 @@ router.patch("/:id", async (req, res) => {
             success: true, 
             manhwa, 
             message: "Manhwa updated"});
-    } catch (err) {
-        res.status(500).json({
-            success: false,
-            error: err.message
-        })
-    }
 
-});
+}));
 
 export default router;

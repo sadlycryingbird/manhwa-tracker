@@ -1,10 +1,15 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config({
+  path: process.env.NODE_ENV === "test" ? ".env.test" : ".env"
+});
 
-const { MONGO_USER, MONGO_PASS, MONGO_CLUSTER, MONGO_DB } = process.env;
+const MONGO_URI =
+  process.env.NODE_ENV === "test"
+    ? process.env.MONGO_TEST_URI
+    : `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@${process.env.MONGO_CLUSTER}.ufzo2fl.mongodb.net/${process.env.MONGO_DB}?retryWrites=true&w=majority`;
 
-mongoose.connect(`mongodb+srv://${MONGO_USER}:${MONGO_PASS}@${MONGO_CLUSTER}.ufzo2fl.mongodb.net/${MONGO_DB}?retryWrites=true&w=majority`)
-    .then(() => console.log("MongoDB connected"))
-    .catch(err => console.log(err));
+mongoose.connect(MONGO_URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch(err => console.log(err));
