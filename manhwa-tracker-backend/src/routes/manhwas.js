@@ -59,7 +59,7 @@ router.delete("/:id", asyncHandler(async (req, res) => {
 
         res.json({
             success: true, 
-            data: manhwa, 
+            manhwa, 
             message: "Manhwa deleted"
         });
 
