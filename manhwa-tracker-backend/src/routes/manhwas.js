@@ -1,7 +1,8 @@
 import express from "express";
 import Manhwa from "../models/Manhwa.js";
 import mongoose from "mongoose";
-import { asyncHandler } from "../middleware/asyncHandler.js";
+import asyncHandler from "../middleware/asyncHandler.js";
+import validateManhwa from "../middleware/validateManhwa.js";
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.get("/", asyncHandler(async (req, res) => {
 
 }));
 
-router.post("/", asyncHandler(async (req, res) => {
+router.post("/", validateManhwa, asyncHandler(async (req, res) => {
 
         const {title, rating, status} = req.body;
 
