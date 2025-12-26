@@ -20,3 +20,17 @@ export const createUserManhwa = async (req, res, next) => {
     }
 
 };
+
+export const getUserManhwa = async (req, res, next) => {
+    try {
+
+        const userId = req.user.id;
+
+        const displayedManhwa = await UserManhwa.find({userId});
+
+        res.status(200).json(displayedManhwa);
+
+    } catch (error) {
+        next(error);
+    }
+}
