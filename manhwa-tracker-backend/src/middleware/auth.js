@@ -1,11 +1,10 @@
-import jwt from "jsonwebtoken";
-import User from "../models/User.js"; // your User model
+import jwt from "jsonwebtoken";// your User model
 import dotenv from "dotenv";
 dotenv.config();
 
 const auth = async (req, res, next) => {
   try {
-    console.log("Auth middleware hit. Headers:", req.headers);
+
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {

@@ -1,8 +1,8 @@
 import UserManhwa from "../models/UserManhwa.js";
-import asyncHandler from "../middleware/asyncHandler.js";
 
-export const createUserManhwa = asyncHandler(async (req, res, next) => {
+export const createUserManhwa = async (req, res, next) => {
 
+    try {
     const userId = req.user.id;
 
     const { manhwaId, status, currentChapter } = req.body;
@@ -15,5 +15,8 @@ export const createUserManhwa = asyncHandler(async (req, res, next) => {
     });
 
     res.status(201).json(userManhwa);
+    } catch (error) {
+        next(error);
+    }
 
-});
+};
