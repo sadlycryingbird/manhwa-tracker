@@ -1,4 +1,5 @@
 import UserManhwa from "../models/UserManhwa.js";
+import { findManhwaOrFail } from "../helpers/userManhwa.helpers.js";
 
 export const createUserManhwa = async (req, res, next) => {
 
@@ -66,4 +67,34 @@ export const updateUserManhwa = async(req, res, next) => {
     } catch (error) {
         next(error);
     }
+}
+
+export const deleteUserManhwa = async(req, res, next) => {
+
+    try {
+
+        const userId = req.user.id;
+        const { id } = req.params;
+        
+
+        const manhwa = await UserManhwa.findById(id);
+
+        if (!manhwa) {
+            return res.status(404).json({success: false, message: "Manhwa not found"});
+        }
+
+        if (manhwa.userId.toString() !== userId) {
+            return res.status(403).json({ success: false, message: "Forbidden" });
+        }
+
+        await manhwa.deleteOne();
+
+        return res.status(200).json({ success: true, message: "Manhwa deleted"});
+
+    } catch (error) {
+
+        next(error);
+
+    }
+
 }
