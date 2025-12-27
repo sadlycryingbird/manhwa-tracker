@@ -6,6 +6,27 @@ import { loginTestUser } from "../helpers/auth.js";
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.test" });
 
+export async function createManhwa(token, manhwaData = {}) {
+  const defaultData = {
+    manhwaId: `test-manhwa-${Date.now()}`,
+    status: "reading",
+    currentChapter: 1,
+  };
+
+  const payload = { ...defaultData, ...manhwaData };
+
+  const res = await request(app)
+    .post("/user-manhwa")
+    .set("Authorization", `Bearer ${token}`)
+    .send(payload);
+
+  if (res.statusCode !== 201) {
+    throw new Error(`Failed to create test manhwa: ${res.statusCode}`);
+  }
+
+  return res.body._id; // Return the created manhwa ID
+}
+
 import { MongoMemoryServer } from "mongodb-memory-server";
 let mongoServer;
 
@@ -104,20 +125,11 @@ describe("UserManhwa", () => {
     beforeAll(async () => {
         happyToken = await loginTestUser("happypathtest");
         errorToken = await loginTestUser("errorpathtest");
-
-        const createdRes = await request(app)
-            .post("/user-manhwa")
-            .set("Authorization", `Bearer ${happyToken}`)
-            .send({
-                manhwaId: "solo-leveling-123",
-                status: "reading",
-                currentChapter: 10
-            });
-
-        manhwaId = createdRes.body._id;
+        manhwaId = await createManhwa(happyToken);
+        
     });
     it("updates successfully when user has that manhwa in their list", async () => {
-
+        
         const statusUpdateTest = await request(app)
             .patch(`/user-manhwa/${manhwaId}`)
             .set("Authorization", `Bearer ${happyToken}`)
@@ -129,6 +141,7 @@ describe("UserManhwa", () => {
     });
     
     it("returns 401 if no token is provided", async () => {
+
         const noUserResponse = await request(app)
             .patch(`/user-manhwa/${manhwaId}`)
             .send({ status: "completed" });
@@ -137,6 +150,7 @@ describe("UserManhwa", () => {
     });
 
     it("returns 403 if user does not own the manhwa", async () => {
+
         const wrongUserResponse = await request(app)
             .patch(`/user-manhwa/${manhwaId}`)
             .set("Authorization", `Bearer ${errorToken}`)
@@ -159,4 +173,54 @@ describe("UserManhwa", () => {
     });
 
   });
+
+  describe("DELETE /user-manhwa/:id", () => {
+
+    let happyToken, errorToken, manhwaId;
+
+    beforeEach(async () => {
+        happyToken = await loginTestUser("happypathtest");
+        errorToken = await loginTestUser("errorpathtest");
+        manhwaId = await createManhwa(happyToken);        
+    });
+
+  it("deletes successfully when user has that manhwa in their list", async () => {
+
+        const deleteTest = await request(app)
+            .delete(`/user-manhwa/${manhwaId}`)
+            .set("Authorization", `Bearer ${happyToken}`);
+
+        expect(deleteTest.statusCode).toBe(200);    
+        expect(deleteTest.body.message).toBe("Manhwa deleted");
+        
+    });
+
+    it("returns 401 if no token is provided", async () => {
+        const noUserResponse = await request(app)
+            .delete(`/user-manhwa/${manhwaId}`);
+
+        expect(noUserResponse.statusCode).toBe(401);
+    });
+
+    it("returns 403 if user does not own the manhwa", async () => {
+        const wrongUserResponse = await request(app)
+            .delete(`/user-manhwa/${manhwaId}`)
+            .set("Authorization", `Bearer ${errorToken}`);
+        
+        expect(wrongUserResponse.statusCode).toBe(403);
+        expect(wrongUserResponse.body.message).toBe("Forbidden");
+    });
+    
+    it("returns 404 for non-existent manhwa", async () => {
+        const fakeId = "64f6a1b0f0d3c123456789ab";
+    
+        const nonExistentManhwaRes = await request(app)
+            .delete(`/user-manhwa/${fakeId}`)
+            .set("Authorization", `Bearer ${happyToken}`);
+
+        expect(nonExistentManhwaRes.statusCode).toBe(404);
+        expect(nonExistentManhwaRes.body.message).toBe("Manhwa not found");
+    });
+  });
+
 });
