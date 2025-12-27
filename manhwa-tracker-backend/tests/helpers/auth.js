@@ -1,14 +1,21 @@
 import request from "supertest";
 import app from "../../src/app.js";
 
-export async function loginTestUser() {
-  const email = "test@test.com";
+export async function loginTestUser(uniqueId = "") {
+  const email = `test${uniqueId}@test.com`;
   const password = "password123";
 
-  await request(app).post("/auth/register").send({ email, password });
+  try {
+    await request(app).post("/auth/register").send({ email, password });
+  } catch (err) {
+
+  }
 
   const res = await request(app).post("/auth/login").send({ email, password });
 
-  console.log("Login token:", res.body.token); // <- check what you get
+  if (!res.body.token) {
+    throw new Error("Failed to login test user and retrieve token");
+  }
+
   return res.body.token;
 }
