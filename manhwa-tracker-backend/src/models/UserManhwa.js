@@ -20,7 +20,7 @@ const userManhwaSchema = new mongoose.Schema(
     currentChapter: {
       type: Number,
       required: true,
-      min: 0,
+      min: [1, "currentChapter must be at least 1"],
     },
   },
   { timestamps: true }

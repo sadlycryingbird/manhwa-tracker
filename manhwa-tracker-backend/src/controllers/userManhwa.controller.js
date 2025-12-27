@@ -1,5 +1,4 @@
 import UserManhwa from "../models/UserManhwa.js";
-import { findManhwaOrFail } from "../helpers/userManhwa.helpers.js";
 
 export const createUserManhwa = async (req, res, next) => {
 
@@ -7,6 +6,18 @@ export const createUserManhwa = async (req, res, next) => {
     const userId = req.user.id;
 
     const { manhwaId, status, currentChapter } = req.body;
+
+    const existingManhwa = await UserManhwa.findOne({
+        userId,
+        manhwaId
+    });
+
+    if (existingManhwa) {
+        return res.status(409).json({
+            success:false,
+            message: "Manhwa already in your list"
+        });
+    }
 
     const userManhwa = await UserManhwa.create({
       userId,          
