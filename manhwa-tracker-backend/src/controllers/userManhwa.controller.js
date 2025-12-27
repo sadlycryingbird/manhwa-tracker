@@ -34,3 +34,36 @@ export const getUserManhwa = async (req, res, next) => {
         next(error);
     }
 }
+
+export const updateUserManhwa = async(req, res, next) => {
+    try {
+        
+        const userId = req.user.id;
+        const { id } = req.params;
+        const { status } = req.body;
+
+        const allowedStatuses = ["plan to read", "reading", "completed"];
+
+        if (!allowedStatuses.includes(status)) {
+            return res.status(400).json({ success: false, message: "Invalid status" });
+        }
+    
+        const manhwa = await UserManhwa.findById(id);
+
+        if (!manhwa) {
+            return res.status(404).json({success: false, message: "Manhwa not found"});
+        }
+
+        if (manhwa.userId.toString() !== userId) {
+            return res.status(403).json({ success: false, message: "Forbidden" });
+        }
+
+        manhwa.status = status;
+        await manhwa.save();
+        
+        return res.status(200).json(manhwa);
+    
+    } catch (error) {
+        next(error);
+    }
+}

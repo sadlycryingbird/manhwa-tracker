@@ -96,5 +96,67 @@ describe("UserManhwa", () => {
 
     });
   });
+  
+  describe("PATCH /user-manhwa/:id", () => {
 
+    let happyToken, errorToken, manhwaId;
+
+    beforeAll(async () => {
+        happyToken = await loginTestUser("happypathtest");
+        errorToken = await loginTestUser("errorpathtest");
+
+        const createdRes = await request(app)
+            .post("/user-manhwa")
+            .set("Authorization", `Bearer ${happyToken}`)
+            .send({
+                manhwaId: "solo-leveling-123",
+                status: "reading",
+                currentChapter: 10
+            });
+
+        manhwaId = createdRes.body._id;
+    });
+    it("updates successfully when user has that manhwa in their list", async () => {
+
+        const statusUpdateTest = await request(app)
+            .patch(`/user-manhwa/${manhwaId}`)
+            .set("Authorization", `Bearer ${happyToken}`)
+            .send({status: "completed"});
+
+        expect(statusUpdateTest.statusCode).toBe(200);    
+        expect(statusUpdateTest.body.status).toBe("completed");
+        
+    });
+    
+    it("returns 401 if no token is provided", async () => {
+        const noUserResponse = await request(app)
+            .patch(`/user-manhwa/${manhwaId}`)
+            .send({ status: "completed" });
+
+        expect(noUserResponse.statusCode).toBe(401);
+    });
+
+    it("returns 403 if user does not own the manhwa", async () => {
+        const wrongUserResponse = await request(app)
+            .patch(`/user-manhwa/${manhwaId}`)
+            .set("Authorization", `Bearer ${errorToken}`)
+            .send({ status: "completed" });
+        
+        expect(wrongUserResponse.statusCode).toBe(403);
+        expect(wrongUserResponse.body.message).toBe("Forbidden");
+    });
+    
+    it("returns 404 for non-existent manhwa", async () => {
+        const fakeId = "64f6a1b0f0d3c123456789ab";
+    
+        const nonExistentManhwaRes = await request(app)
+            .patch(`/user-manhwa/${fakeId}`)
+            .set("Authorization", `Bearer ${happyToken}`)
+            .send({ status: "completed" });
+
+        expect(nonExistentManhwaRes.statusCode).toBe(404);
+        expect(nonExistentManhwaRes.body.message).toBe("Manhwa not found");
+    });
+
+  });
 });
