@@ -24,7 +24,7 @@ export async function createManhwa(token, manhwaData = {}) {
     throw new Error(`Failed to create test manhwa: ${res.statusCode}`);
   }
 
-  return res.body._id; // Return the created manhwa ID
+  return res.body.data._id; // Return the created manhwa ID
 }
 
 import { MongoMemoryServer } from "mongodb-memory-server";
@@ -58,12 +58,14 @@ describe("UserManhwa", () => {
         .send(payload);
 
       expect(res.statusCode).toBe(201);
-      expect(res.body).toMatchObject({
+      expect(res.body.data).toMatchObject({
         manhwaId: payload.manhwaId,
         status: payload.status,
         currentChapter: payload.currentChapter,
-      });
-      expect(res.body).toHaveProperty("userId");
+    });
+      expect(res.body).toHaveProperty("success", true);
+      expect(res.body).toHaveProperty("message", "Manhwa added to your list");
+      expect(res.body).toHaveProperty("data");
     });
   });
 
@@ -101,10 +103,11 @@ describe("UserManhwa", () => {
         expect(displayManhwaRes.headers["content-type"]).toMatch(/json/);
 
         // Check response structure
+        expect(displayManhwaRes.body).toHaveProperty("success", true);
+        expect(displayManhwaRes.body).toHaveProperty("data");
         expect(displayManhwaRes.body).toHaveProperty("total");
         expect(displayManhwaRes.body).toHaveProperty("page");
         expect(displayManhwaRes.body).toHaveProperty("limit");
-        expect(displayManhwaRes.body).toHaveProperty("data");
         expect(displayManhwaRes.body.page).toBe(1);
         expect(displayManhwaRes.body.limit).toBe(10);
         expect(displayManhwaRes.body.total).toBe(1); // total manhwas for the user
@@ -138,7 +141,9 @@ describe("UserManhwa", () => {
             .send({status: "completed"});
 
         expect(statusUpdateTest.statusCode).toBe(200);    
-        expect(statusUpdateTest.body.status).toBe("completed");
+        expect(statusUpdateTest.body.data).toHaveProperty("status", "completed");
+        expect(statusUpdateTest.body).toHaveProperty("success", true);
+        expect(statusUpdateTest.body).toHaveProperty("data");
         
     });
     
@@ -193,8 +198,8 @@ describe("UserManhwa", () => {
             .set("Authorization", `Bearer ${happyToken}`);
 
         expect(deleteTest.statusCode).toBe(200);    
-        expect(deleteTest.body.message).toBe("Manhwa deleted");
-        
+        expect(deleteTest.body).toHaveProperty("message", "Manhwa deleted");
+        expect(deleteTest.body).toHaveProperty("success", true);
     });
 
     it("returns 401 if no token is provided", async () => {

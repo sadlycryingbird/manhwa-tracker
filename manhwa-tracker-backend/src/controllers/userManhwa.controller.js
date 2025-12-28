@@ -26,7 +26,11 @@ export const createUserManhwa = async (req, res, next) => {
       currentChapter,
     });
 
-    res.status(201).json(userManhwa);
+    res.status(201).json({
+        success: true,
+        data: userManhwa,
+        message: "Manhwa added to your list"
+    });
     } catch (error) {
         next(error);
     }
@@ -69,10 +73,11 @@ export const getUserManhwa = async (req, res, next) => {
 
     // Return paginated response
     res.status(200).json({
-      total,
-      page: pageNum,
-      limit: limitNum,
-      data
+        success: true,
+        data,
+        page: pageNum,
+        limit: limitNum,
+        total
     });
 
   } catch (error) {
@@ -107,7 +112,11 @@ export const updateUserManhwa = async(req, res, next) => {
         manhwa.status = status;
         await manhwa.save();
         
-        return res.status(200).json(manhwa);
+        return res.status(200).json({
+            success: true,
+            data: manhwa,
+            message: "Manhwa updated"
+        });
     
     } catch (error) {
         next(error);
@@ -134,7 +143,10 @@ export const deleteUserManhwa = async(req, res, next) => {
 
         await manhwa.deleteOne();
 
-        return res.status(200).json({ success: true, message: "Manhwa deleted"});
+        return res.status(200).json({ 
+            success: true, 
+            message: "Manhwa deleted"
+        });
 
     } catch (error) {
 
