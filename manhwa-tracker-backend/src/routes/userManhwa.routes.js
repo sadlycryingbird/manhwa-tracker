@@ -5,9 +5,9 @@ import asyncHandler from "../middleware/asyncHandler.js";
 
 const router = express.Router();
 
-router.post("/user-manhwa", auth, asyncHandler(createUserManhwa));
-router.get("/user-manhwa", auth, asyncHandler(getUserManhwa));
-router.patch("/user-manhwa/:id", auth, asyncHandler(updateUserManhwa));
-router.delete("/user-manhwa/:id", auth, asyncHandler(deleteUserManhwa));
+router.post("/", auth, asyncHandler(createUserManhwa));
+router.get("/", auth, asyncHandler(getUserManhwa));
+router.patch("/:id", auth, asyncHandler(updateUserManhwa));
+router.delete("/:id", auth, asyncHandler(deleteUserManhwa));
 
 export default router;

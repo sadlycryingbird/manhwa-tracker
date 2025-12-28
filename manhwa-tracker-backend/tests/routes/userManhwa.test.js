@@ -99,21 +99,23 @@ describe("UserManhwa", () => {
 
         expect(displayManhwaRes.statusCode).toBe(200);
         expect(displayManhwaRes.headers["content-type"]).toMatch(/json/);
-        expect(displayManhwaRes.body).toEqual(expect.any(Array));
-        expect(displayManhwaRes.body[0]).toHaveProperty("manhwaId");
-        expect(displayManhwaRes.body[0]).toHaveProperty("status");
-        expect(displayManhwaRes.body[0]).toHaveProperty("currentChapter");
-        expect(displayManhwaRes.body.length).toBe(1);
 
-        expect(displayManhwaRes.body).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({
-                manhwaId: "tower-of-god-456",
-                status: "reading",
-                currentChapter: 5
-                })
-            ])
-        );
+        // Check response structure
+        expect(displayManhwaRes.body).toHaveProperty("total");
+        expect(displayManhwaRes.body).toHaveProperty("page");
+        expect(displayManhwaRes.body).toHaveProperty("limit");
+        expect(displayManhwaRes.body).toHaveProperty("data");
+        expect(displayManhwaRes.body.page).toBe(1);
+        expect(displayManhwaRes.body.limit).toBe(10);
+        expect(displayManhwaRes.body.total).toBe(1); // total manhwas for the user
+
+        const manhwas = displayManhwaRes.body.data;
+
+        // Check that data array has the expected manhwa
+        expect(manhwas.length).toBe(1);
+        expect(manhwas[0]).toHaveProperty("manhwaId", "tower-of-god-456");
+        expect(manhwas[0]).toHaveProperty("status", "reading");
+        expect(manhwas[0]).toHaveProperty("currentChapter", 5);
 
     });
   });
