@@ -8,8 +8,8 @@ app.use(express.json());
 
 app.use(logger);
 
-app.use(authRoutes);
-app.use(userManhwaRoutes);
+app.use("/auth", authRoutes);
+app.use("/user-manhwa", userManhwaRoutes);
 
 app.use(errorHandler);
 

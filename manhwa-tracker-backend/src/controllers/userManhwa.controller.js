@@ -34,18 +34,52 @@ export const createUserManhwa = async (req, res, next) => {
 };
 
 export const getUserManhwa = async (req, res, next) => {
-    try {
+  try {
+    const userId = req.user.id;
 
-        const userId = req.user.id;
+    // Extract query params with defaults
+    const { status, sort, page = 1, limit = 10 } = req.query;
 
-        const displayedManhwa = await UserManhwa.find({userId});
+    // Build filter
+    const filter = { userId };
 
-        res.status(200).json(displayedManhwa);
-
-    } catch (error) {
-        next(error);
+    if (status) {
+        filter.status = status;
     }
-}
+
+    // Build sort option
+    let sortOption = {};
+    if (sort === "alphabetical") {
+        sortOption = { manhwaId: 1 };
+    }
+    
+    // Parse pagination values safely
+    const pageNum = Math.max(parseInt(page, 10), 1);
+    const limitNum = Math.min(parseInt(limit, 10), 50); // safety cap
+    const skip = (pageNum - 1) * limitNum;
+
+    // Execute queries
+    const [total, data] = await Promise.all([
+      UserManhwa.countDocuments(filter),
+      UserManhwa.find(filter)
+        .sort(sortOption)
+        .skip(skip)
+        .limit(limitNum)
+    ]);
+
+    // Return paginated response
+    res.status(200).json({
+      total,
+      page: pageNum,
+      limit: limitNum,
+      data
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 export const updateUserManhwa = async(req, res, next) => {
     try {
