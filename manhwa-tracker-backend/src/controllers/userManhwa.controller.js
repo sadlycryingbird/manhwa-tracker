@@ -48,7 +48,7 @@ export const getUserManhwa = async (req, res, next) => {
     }
 
     // Build sort option
-    let sortOption = {};
+    let sortOption = { createdAt: -1 };
     if (sort === "alphabetical") {
         sortOption = { manhwaId: 1 };
     }
