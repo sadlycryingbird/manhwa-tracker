@@ -1,10 +1,10 @@
-import mongoose, { Document, Schema, Model } from "mongoose";
+import mongoose, { Document, Schema, Model, Types } from "mongoose";
 
 export interface IUserManhwa extends Document {
-    userId : String;
-    manhwaId : String;
+    userId : Types.OjbectId;
+    manhwaId : string;
     status : "unread" | "reading" | "completed" | "plan_to_read";
-    currentChapter : Number;
+    currentChapter : number;
 }
 
 const userManhwaSchema : Schema<IUserManhwa> = new Schema(

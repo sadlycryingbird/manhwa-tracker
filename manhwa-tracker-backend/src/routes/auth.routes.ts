@@ -1,6 +1,6 @@
 import express from "express";
-import { registerController, loginController } from "../controllers/auth.controller.js";
-import asyncHandler from "../middleware/asyncHandler.js";
+import { registerController, loginController } from "../controllers/auth.controller.ts";
+import asyncHandler from "../middleware/asyncHandler.ts";
 
 const router = express.Router();
 

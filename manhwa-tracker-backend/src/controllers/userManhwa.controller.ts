@@ -1,11 +1,24 @@
-import UserManhwa from "../models/UserManhwa.js";
+import UserManhwa, { IUserManhwa } from "../models/UserManhwa.ts";
+import { Request, Response, NextFunction } from "express";
 
-export const createUserManhwa = async (req, res, next) => {
+export const createUserManhwa = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
 
     try {
-    const userId = req.user.id;
 
-    const { manhwaId, status, currentChapter } = req.body;
+    interface CreateUserManhwaBody {
+        manhwaId: string;
+        status: "unread" | "reading" | "completed" | "plan_to_read";
+        currentChapter: number;
+    }
+
+    const userId = req.user!.id;
+
+    const { manhwaId, status, currentChapter } = 
+        req.body as CreateUserManhwaBody;
 
     const existingManhwa = await UserManhwa.findOne({
         userId,
@@ -24,7 +37,7 @@ export const createUserManhwa = async (req, res, next) => {
       manhwaId,
       status,
       currentChapter,
-    });
+    }) as IUserManhwa;
 
     res.status(201).json({
         success: true,
