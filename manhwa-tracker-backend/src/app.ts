@@ -1,7 +1,7 @@
 import express from "express";
-import { logger, errorHandler } from "./middleware/index.js";
-import userManhwaRoutes from "./routes/userManhwa.routes.js";
-import authRoutes from "./routes/auth.routes.js";
+import { logger, errorHandler } from "./middleware/index.ts";
+import userManhwaRoutes from "./routes/userManhwa.routes.ts";
+import authRoutes from "./routes/auth.routes.ts";
 
 const app = express();
 app.use(express.json());

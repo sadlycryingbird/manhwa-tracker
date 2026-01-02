@@ -1,7 +1,7 @@
 import express from "express";
-import { createUserManhwa, getUserManhwa, updateUserManhwa, deleteUserManhwa } from "../controllers/userManhwa.controller.js";
-import auth from "../middleware/auth.js";
-import asyncHandler from "../middleware/asyncHandler.js";
+import { createUserManhwa, getUserManhwa, updateUserManhwa, deleteUserManhwa } from "../controllers/userManhwa.controller.ts";
+import auth from "../middleware/auth.ts";
+import asyncHandler from "../middleware/asyncHandler.ts";
 
 const router = express.Router();
 

@@ -1,12 +1,20 @@
 import request from "supertest";
 import mongoose from "mongoose";
-import app from "../../src/app.js";
-import UserManhwa from "../../src/models/UserManhwa.js";
-import { loginTestUser } from "../helpers/auth.js";
+import app from "../../src/app";
+import UserManhwa from "../../src/models/UserManhwa";
+import { loginTestUser } from "../helpers/auth";
+import { MongoMemoryServer } from "mongodb-memory-server";
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.test" });
 
-export async function createManhwa(token, manhwaData = {}) {
+export async function createManhwa(
+  token: string,
+  manhwaData: Partial<{
+    manhwaId: string,
+    status: "unread" | "reading" | "completed" | "plan_to_read";
+    currentChapter: number;
+  }> = {}
+) {
   const defaultData = {
     manhwaId: `test-manhwa-${Date.now()}`,
     status: "reading",
@@ -27,8 +35,7 @@ export async function createManhwa(token, manhwaData = {}) {
   return res.body.data._id; // Return the created manhwa ID
 }
 
-import { MongoMemoryServer } from "mongodb-memory-server";
-let mongoServer;
+let mongoServer: MongoMemoryServer;
 
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
@@ -40,7 +47,6 @@ afterAll(async () => {
   await mongoose.disconnect();
   await mongoServer.stop();
 });
-
 describe("UserManhwa", () => {
   describe("POST /user-manhwa", () => {
     it("allows a user to add a manhwa to their list", async () => {
@@ -125,7 +131,9 @@ describe("UserManhwa", () => {
   
   describe("PATCH /user-manhwa/:id", () => {
 
-    let happyToken, errorToken, manhwaId;
+    let happyToken: string;
+    let errorToken: string;
+    let manhwaId: string;
 
     beforeAll(async () => {
         happyToken = await loginTestUser("happypathtest");
@@ -183,7 +191,9 @@ describe("UserManhwa", () => {
 
   describe("DELETE /user-manhwa/:id", () => {
 
-    let happyToken, errorToken, manhwaId;
+    let happyToken: string;
+    let errorToken: string;
+    let manhwaId: string;
 
     beforeEach(async () => {
         happyToken = await loginTestUser("happypathtest");
