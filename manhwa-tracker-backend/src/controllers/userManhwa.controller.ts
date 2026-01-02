@@ -1,5 +1,6 @@
 import UserManhwa, { IUserManhwa } from "../models/UserManhwa.ts";
 import { Request, Response, NextFunction } from "express";
+import { FilterQuery } from "mongoose";
 
 export const createUserManhwa = async (
     req: Request,
@@ -15,7 +16,7 @@ export const createUserManhwa = async (
         currentChapter: number;
     }
 
-    const userId = req.user!.id;
+    const userId = req.user!._id.toString();
 
     const { manhwaId, status, currentChapter } = 
         req.body as CreateUserManhwaBody;
@@ -50,54 +51,49 @@ export const createUserManhwa = async (
 
 };
 
-export const getUserManhwa = async (req, res, next) => {
+export const getUserManhwa = async (
+  req: Request<{}, {}, {}, GetUserManhwaQuery>, // req.query is typed here
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const userId = req.user.id;
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
 
-    // Extract query params with defaults
-    const { status, sort, page = 1, limit = 10 } = req.query;
+    const userId = req.user._id.toString();
 
-    // Build filter
-    const filter = { userId };
+    const { status, sort, page = "1", limit = "10" } = req.query;
+
+    const filter: FilterQuery<IUserManhwa> = { userId };
 
     if (status) {
-        filter.status = status;
+      filter.status = status;
     }
 
-    // Build sort option
-    let sortOption = { createdAt: -1 };
-    if (sort === "alphabetical") {
-        sortOption = { manhwaId: 1 };
-    }
-    
-    // Parse pagination values safely
+    const sortOption: Record<string, 1 | -1> =
+      sort === "alphabetical" ? { manhwaId: 1 } : { createdAt: -1 };
+
     const pageNum = Math.max(parseInt(page, 10), 1);
-    const limitNum = Math.min(parseInt(limit, 10), 50); // safety cap
+    const limitNum = Math.min(parseInt(limit, 10), 50);
     const skip = (pageNum - 1) * limitNum;
 
-    // Execute queries
     const [total, data] = await Promise.all([
       UserManhwa.countDocuments(filter),
-      UserManhwa.find(filter)
-        .sort(sortOption)
-        .skip(skip)
-        .limit(limitNum)
+      UserManhwa.find(filter).sort(sortOption).skip(skip).limit(limitNum),
     ]);
 
-    // Return paginated response
     res.status(200).json({
-        success: true,
-        data,
-        page: pageNum,
-        limit: limitNum,
-        total
+      success: true,
+      data,
+      page: pageNum,
+      limit: limitNum,
+      total,
     });
-
   } catch (error) {
     next(error);
   }
 };
-
 
 export const updateUserManhwa = async (
     req: Request,
@@ -110,7 +106,11 @@ export const updateUserManhwa = async (
             status: "reading" | "completed" | "plan to read";
         }
 
-        const userId = req.user!.id;
+        if (!req.user) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        const userId = req.user._id.toString();
         const { id } = req.params;
         const { status } = req.body as UpdateUserManhwaBody;
 
@@ -148,13 +148,25 @@ export const updateUserManhwa = async (
     }
 }
 
-export const deleteUserManhwa = async(req, res, next) => {
+export const deleteUserManhwa = async(
+    req: Request, 
+    res: Response, 
+    next: NextFunction
+) => {
 
     try {
 
-        const userId = req.user.id;
-        const { id } = req.params;
-        
+        if (!req.user) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        const userId = req.user._id.toString();
+
+        type Id = {
+            id: string;
+        }
+
+        const { id } = req.params as Id;
 
         const manhwa = await UserManhwa.findById(id);
 
@@ -178,5 +190,4 @@ export const deleteUserManhwa = async(req, res, next) => {
         next(error);
 
     }
-
 }
