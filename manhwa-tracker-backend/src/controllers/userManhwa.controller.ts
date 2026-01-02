@@ -99,14 +99,26 @@ export const getUserManhwa = async (req, res, next) => {
 };
 
 
-export const updateUserManhwa = async(req, res, next) => {
+export const updateUserManhwa = async (
+    req: Request,
+    res: Response, 
+    next: NextFunction
+) => {
     try {
         
-        const userId = req.user.id;
-        const { id } = req.params;
-        const { status } = req.body;
+        type UpdateUserManhwaBody = {
+            status: "reading" | "completed" | "plan to read";
+        }
 
-        const allowedStatuses = ["plan to read", "reading", "completed"];
+        const userId = req.user!.id;
+        const { id } = req.params;
+        const { status } = req.body as UpdateUserManhwaBody;
+
+         const allowedStatuses: UpdateUserManhwaBody["status"][] = [
+            "reading",
+            "completed",
+            "plan to read",
+        ];
 
         if (!allowedStatuses.includes(status)) {
             return res.status(400).json({ success: false, message: "Invalid status" });

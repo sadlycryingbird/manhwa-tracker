@@ -131,7 +131,9 @@ describe("UserManhwa", () => {
   
   describe("PATCH /user-manhwa/:id", () => {
 
-    let happyToken, errorToken, manhwaId;
+    let happyToken: string;
+    let errorToken: string;
+    let manhwaId: string;
 
     beforeAll(async () => {
         happyToken = await loginTestUser("happypathtest");
@@ -189,7 +191,9 @@ describe("UserManhwa", () => {
 
   describe("DELETE /user-manhwa/:id", () => {
 
-    let happyToken, errorToken, manhwaId;
+    let happyToken: string;
+    let errorToken: string;
+    let manhwaId: string;
 
     beforeEach(async () => {
         happyToken = await loginTestUser("happypathtest");
