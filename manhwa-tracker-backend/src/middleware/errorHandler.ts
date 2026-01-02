@@ -1,6 +1,20 @@
-const errorHandler = (err, req, res, next) => {
+import { Request, Response, NextFunction } from "express";
+
+interface MongooseError extends Error {
+  name?: string;
+  code?: number;
+  errors?: Record<string, { message: string }>;
+  status?: number;
+}
+
+const errorHandler = (
+  err: MongooseError,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // Mongoose validation error
-  if (err.name === "ValidationError") {
+  if (err.name === "ValidationError" && err.errors) {
     const message = Object.values(err.errors)[0].message;
     return res.status(400).json({
       success: false,

@@ -14,7 +14,7 @@ const auth = async (
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET not defined");
     }
-    
+
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
